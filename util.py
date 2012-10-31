@@ -10,20 +10,20 @@ def create_nic(server, vm_name, network_name):
 	@vm_name: vm name string
 	@network_name: netork name string"""
 
-	vm_obj = server.get_vm_by_name(vm_name)
-	if not vm_obj:
+	vm = server.get_vm_by_name(vm_name)
+	if not vm:
 	    raise Exception("VM %s not found" % vm_name)
 
 	#Invoke ReconfigVM_Task
 	request = VI.ReconfigVM_TaskRequestMsg()
-	_this = request.new__this(vm_obj._mor)
-	_this.set_attribute_type(vm_obj._mor.get_attribute_type())
+	_this = request.new__this(vm._mor)
+	_this.set_attribute_type(vm._mor.get_attribute_type())
 	request.set_element__this(_this)
 	spec = request.new_spec()
-	#add a NIC. the network Name must be set as the device name.
+	# Add a NIC; the network name must be set as the device name
 	dev_change = spec.new_deviceChange()
 	dev_change.set_element_operation("add")
-	nic_ctlr = VI.ns0.VirtualPCNet32_Def("nic_ctlr").pyclass()
+	nic_ctlr = VI.ns0.VirtualE1000_Def("nic_ctlr").pyclass()
 	nic_backing = VI.ns0.VirtualEthernetCardNetworkBackingInfo_Def("nic_backing").pyclass()
 	nic_backing.set_element_deviceName(network_name)
 	nic_ctlr.set_element_addressType("generated")
@@ -35,7 +35,7 @@ def create_nic(server, vm_name, network_name):
 	request.set_element_spec(spec)
 	ret = server._proxy.ReconfigVM_Task(request)._returnval
 
-	#Wait for the task to finish
+	# Wait for the task to finish
 	task = VITask(ret, server)
 	status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR])
 	if status == task.STATE_SUCCESS:
@@ -44,46 +44,56 @@ def create_nic(server, vm_name, network_name):
 	elif status == task.STATE_ERROR:
 	    print "Error reconfiguring vm: %s" % vm_name, task.get_error_message()
 
-def reconfigure_nic(server, vm, network_name):
-	vm_name = "BT5R2"
-	vm_obj=server.get_vm_by_name(vm_name) 
-	if vm_obj: 
-	    #Find Virtual Nic device 
-	    net_device = None 
-	    for dev in vm_obj.properties.config.hardware.device: 
-		if dev._type in ["VirtualE1000", "VirtualE1000e", 
-		                 "VirtualPCNet32", "VirtualVmxnet"]: 
-		    net_device = dev._obj 
-		    break 
-
-	    if not net_device: 
-		raise Exception("The vm seems to lack a Virtual Nic") 
-	    #Set Nic macAddress to Manual and set address 
-	    #net_device.set_element_addressType("Manual") 
-	    net_device.Backing.set_element_deviceName(network_name)
-	    #Invoke ReconfigVM_Task 
-	    request = VI.ReconfigVM_TaskRequestMsg() 
-	    _this = request.new__this(vm_obj._mor) 
-	    _this.set_attribute_type(vm_obj._mor.get_attribute_type()) 
-	    request.set_element__this(_this) 
-	    spec = request.new_spec() 
-	    dev_change = spec.new_deviceChange() 
-	    dev_change.set_element_device(net_device) 
-	    dev_change.set_element_operation("edit") 
-	    spec.set_element_deviceChange([dev_change]) 
-	    request.set_element_spec(spec) 
-	    ret = server._proxy.ReconfigVM_Task(request)._returnval 
-
-	    #Wait for the task to finish 
-	    task = VITask(ret, server) 
-
-	    status = task.wait_for_state([task.STATE_SUCCESS,task.STATE_ERROR]) 
-	    if status == task.STATE_SUCCESS: 
+def reconfigure_nic(server, vm_name, mac_address, network_name):
+	"""Reconfigures a NIC by its MAC address
+	
+	@server: server object 
+		e.g. server = VIServer() 
+		     server.connect("X.X.X.X", "user", "password")
+	
+	@vm_name: vm name string
+	@mac_address: MAC address of the target NIC
+	@network_name: network name string"""
+		
+	vm = server.get_vm_by_name(vm_name) 
+	
+	if not vm:
+	        raise Exception("VM %s not found" % vm_name)
+	
+	# Find Virtual Nic device 
+	net_device = None 
+	for dev in vm.properties.config.hardware.device: 
+	    if dev._type in ["VirtualE1000", "VirtualE1000e", 
+	                     "VirtualPCNet32", "VirtualVmxnet"] and dev.macAddress == mac_address: 
+	        net_device = dev._obj 
+	        break 
+	
+	if not net_device: 
+	    raise Exception("The vm seems to lack a Virtual Nic") 
+	        
+	# Set NIC MAC address to Manual and set address 
+	# net_device.set_element_addressType("Manual") 
+	net_device.Backing.set_element_deviceName(network_name)
+	# Invoke ReconfigVM_Task 
+	request = VI.ReconfigVM_TaskRequestMsg() 
+	_this = request.new__this(vm._mor) 
+	_this.set_attribute_type(vm._mor.get_attribute_type()) 
+	request.set_element__this(_this) 
+	spec = request.new_spec() 
+	dev_change = spec.new_deviceChange() 
+	dev_change.set_element_device(net_device) 
+	dev_change.set_element_operation("edit") 
+	spec.set_element_deviceChange([dev_change]) 
+	request.set_element_spec(spec) 
+	ret = server._proxy.ReconfigVM_Task(request)._returnval 
+	
+	# Wait for the task to finish 
+	task = VITask(ret, server) 
+	status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR]) 
+	if status == task.STATE_SUCCESS: 
 		print "VM %s successfully reconfigured" % vm_name 
-	    elif status == task.STATE_ERROR: 
-		print "Error reconfiguring vm_name: %s" % vm_name,task.get_error_message() 
-	    else: 
-	    	print "Vm %s not found" % vm_name
+	elif status == task.STATE_ERROR: 
+		print "Error reconfiguring vm_name: %s" % vm_name, task.get_error_message() 
 
 def delete_vm(server, vm_name):
 	"""Deletes a VM from the disk
