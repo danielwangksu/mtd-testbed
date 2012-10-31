@@ -1,7 +1,7 @@
 from pysphere import *
 from pysphere.resources import VimService_services as VI
 
-def create_nic(server, vm_name, network_name):
+def create_nic(server, vm_name, network_name, run_async = False):
 	"""Adds a new NIC to an existing VM
 
 	@server: server object 
@@ -35,16 +35,17 @@ def create_nic(server, vm_name, network_name):
 	request.set_element_spec(spec)
 	ret = server._proxy.ReconfigVM_Task(request)._returnval
 
-	# Wait for the task to finish
-	task = VITask(ret, server)
-	status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR])
-	if status == task.STATE_SUCCESS:
-	    print "VM %s successfully reconfigured" % vm_name
+	if not run_async:
+		# Wait for the task to finish
+		task = VITask(ret, server)
+		status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR])
+		if status == task.STATE_SUCCESS:
+			print "VM %s successfully reconfigured" % vm_name
+		
+		elif status == task.STATE_ERROR:
+			print "Error reconfiguring vm: %s" % vm_name, task.get_error_message()
 
-	elif status == task.STATE_ERROR:
-	    print "Error reconfiguring vm: %s" % vm_name, task.get_error_message()
-
-def reconfigure_nic(server, vm_name, mac_address, network_name):
+def reconfigure_nic(server, vm_name, mac_address, network_name, run_async = False):
 	"""Reconfigures a NIC by its MAC address
 	
 	@server: server object 
@@ -88,14 +89,15 @@ def reconfigure_nic(server, vm_name, mac_address, network_name):
 	ret = server._proxy.ReconfigVM_Task(request)._returnval 
 	
 	# Wait for the task to finish 
-	task = VITask(ret, server) 
-	status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR]) 
-	if status == task.STATE_SUCCESS: 
-		print "VM %s successfully reconfigured" % vm_name 
-	elif status == task.STATE_ERROR: 
-		print "Error reconfiguring vm_name: %s" % vm_name, task.get_error_message() 
+	if not run_async:
+		task = VITask(ret, server) 
+		status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR]) 
+		if status == task.STATE_SUCCESS: 
+			print "VM %s successfully reconfigured" % vm_name 
+		elif status == task.STATE_ERROR: 
+			print "Error reconfiguring vm_name: %s" % vm_name, task.get_error_message() 
 
-def delete_vm(server, vm_name):
+def delete_vm(server, vm_name, run_async = False):
 	"""Deletes a VM from the disk
 
 	@server: server object 
@@ -115,16 +117,17 @@ def delete_vm(server, vm_name):
 	ret = server._proxy.Destroy_Task(request)._returnval
 
 	#Wait for the task to finish
-	task = VITask(ret, server)
+	if not run_async:
+		task = VITask(ret, server)
+	
+		status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR])
+		if status == task.STATE_SUCCESS:
+			print "VM successfully deleted from disk"
+		elif status == task.STATE_ERROR:
+			print "Error removing vm:", task.get_error_message() 
 
-	status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR])
-	if status == task.STATE_SUCCESS:
-	    print "VM successfully deleted from disk"
-	elif status == task.STATE_ERROR:
-	    print "Error removing vm:", task.get_error_message() 
-
-def get_mac(server, vm_name):
-	"""Get MAC address of a VM
+def get_mac_addresses(server, vm_name):
+	"""Get MAC addresses for each interface on a VM
 
 	@server: server object 
 		e.g. server = VIServer() 
@@ -138,7 +141,7 @@ def get_mac(server, vm_name):
 		if device.has_key("macAddress"):
 			print device["label"] + " - " +device["macAddress"] 
 
-def add_virtual_switch(server, network_system, name, num_ports, bridge_nic=None, mtu=None):
+def add_virtual_switch(server, network_system, name, num_ports, bridge_nic = None, mtu = None):
 	"""Add a new vSwitch
 
 	@server: server object 
