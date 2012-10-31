@@ -2,7 +2,7 @@ from pysphere import *
 from pysphere.resources import VimService_services as VI
 from pysphere.vi_task import VITask 
 
-import config
+from util import *
 
 # connect to server
 server = VIServer()

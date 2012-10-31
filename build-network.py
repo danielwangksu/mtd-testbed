@@ -2,7 +2,7 @@ from pysphere import *
 from pysphere.resources import VimService_services as VI
 from pysphere.vi_task import VITask 
 
-import config
+from util import *
 
 webNo = 2
 mailNo = 0
@@ -25,59 +25,59 @@ esxi_host = server.get_hosts().keys()[0]
 # create vSwitches 
 switch1Exists = False
 if webNo or mailNo :
-	switch1Exists = config.createSwitch("a-switch1", "a-switch1", 56, server, esxi_host)
+	switch1Exists = create_switch("a-switch1", "a-switch1", 56, server, esxi_host)
 	
 switch2Exists = False
 if vpnNo or clientNo or logNo or fileNo: 
-	switch2Exists = config.createSwitch("a-switch2", "a-switch2", 56, server, esxi_host);
+	switch2Exists = create_switch("a-switch2", "a-switch2", 56, server, esxi_host);
 	
 switch3Exists = False
 if vpnNo or clientNo:
-	switch3Exists = config.createSwitch("a-switch3", "a-switch3", 56, server, esxi_host);
+	switch3Exists = create_switch("a-switch3", "a-switch3", 56, server, esxi_host);
 	
-switch4Exists = config.createSwitch("a-switch4", "a-switch4", 56, server, esxi_host);
+switch4Exists = create_switch("a-switch4", "a-switch4", 56, server, esxi_host);
 	
 # create pFW
 template_vm = server.get_vm_by_name("mtd-debian-wheezy-64bits")
-pFW = template_vm.clone("a-pFW",resourcepool = "resgroup-142")
+pFW = template_vm.clone("a-pFW", resourcepool = "resgroup-142")
 	
 if switch1Exists and switch2Exists:
-	config.add_new_NIC(server, "a-pFW", "a-switch1")
-	config.add_new_NIC(server, "a-pFW", "a-switch2")
+	create_nic(server, "a-pFW", "a-switch1")
+	create_nic(server, "a-pFW", "a-switch2")
 elif switch1Exists and switch2Exists is False:
-	config.add_new_NIC(server, "a-pFW", "a-switch1")
+	create_nic(server, "a-pFW", "a-switch1")
 elif switch1Exists is False and switch2Exists:
-	config.add_new_NIC(server, "a-pFW", "a-switch2")
+	create_nic(server, "a-pFW", "a-switch2")
 else:
 	print "There is no network behind the perimeter firewall"
 
 # create intFW
 template_vm = server.get_vm_by_name("mtd-debian-wheezy-64bits")
-intFW = template_vm.clone("a-intFW",resourcepool = "resgroup-142")
+intFW = template_vm.clone("a-intFW", resourcepool = "resgroup-142")
 
 if switch3Exists:
-	config.add_new_NIC(server, "a-intFW", "a-switch2")
-	config.add_new_NIC(server, "a-intFW", "a-switch3")
-	config.add_new_NIC(server, "a-intFW", "a-switch4")
+	create_nic(server, "a-intFW", "a-switch2")
+	create_nic(server, "a-intFW", "a-switch3")
+	create_nic(server, "a-intFW", "a-switch4")
 else:
-	config.add_new_NIC(server, "a-intFW", "a-switch2")
-	config.add_new_NIC(server, "a-intFW", "a-switch4")
+	create_nic(server, "a-intFW", "a-switch2")
+	create_nic(server, "a-intFW", "a-switch4")
 	
 # create controller
 template_vm = server.get_vm_by_name("mtd-debian-wheezy-64bits")
-controller = template_vm.clone("a-controller",resourcepool = "resgroup-142")
+controller = template_vm.clone("a-controller", resourcepool = "resgroup-142")
 
 # create web server(s)
 if webNo > 0:
 	for i in range(0,webNo):
 		template_vm = server.get_vm_by_name("mtd-debian-wheezy-64bits")
-		webServer = template_vm.clone("a-web" + str(i),resourcepool = "resgroup-142")
+		webServer = template_vm.clone("a-web" + str(i), resourcepool = "resgroup-142")
 
 # create client machines
 if clientNo > 0:
 	for i in range(0,clientNo):
 		template_vm = server.get_vm_by_name("mtd-debian-wheezy-64bits")
-		client = template_vm.clone("a-client" + str(i),resourcepool = "resgroup-142")
+		client = template_vm.clone("a-client" + str(i), resourcepool = "resgroup-142")
 
 		#createVM($fh, "a-web$i", "mtd-webServerTemplate", 1, server);
 		#$serverArray[] = "a-web$i";
@@ -90,7 +90,7 @@ new_vm = test_vm.clone("mtd-clone_test")
 
 # Clone (deploy) from template
 template_vm = server.get_vm_by_name("mtd-intFW")
-new_vm1 = template_vm.clone("mtd-#clone_from_template",resourcepool = "resgroup-142")
+new_vm1 = template_vm.clone("mtd-#clone_from_template", resourcepool = "resgroup-142")
 '''
 
 '''Add new virtual switch
@@ -114,14 +114,14 @@ num_ports = 56
 #if the given nic is used in another vswitch, check if it works 
 #for you when providing an available physical nic 
 
-config.add_virtual_switch(server, network_system, vswitch_name, num_ports) #, bridge_nic=nic) 
+add_virtual_switch(server, network_system, vswitch_name, num_ports) #, bridge_nic=nic) 
 
 #Add a port group 
 vlan_id = 0 
-config.add_port_group(server, network_system, vswitch_name, vlan_id, vswitch_name) 
+add_port_group(server, network_system, vswitch_name, vlan_id, vswitch_name) 
 '''
 
-#config.add_new_NIC(server, "BT5R2", "a-switch3")
+#create_nic(server, "BT5R2", "a-switch3")
 
-#config.getMAC(server, "a-pFW")
+#get_mac(server, "a-pFW")
 

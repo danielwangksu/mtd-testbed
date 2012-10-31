@@ -1,7 +1,7 @@
 from pysphere import *
 from pysphere.resources import VimService_services as VI
 
-def add_new_NIC(server, vm_name, network_name):
+def create_nic(server, vm_name, network_name):
 	"""Adds a new NIC to an existing VM
 
 	@server: server object 
@@ -44,7 +44,7 @@ def add_new_NIC(server, vm_name, network_name):
 	elif status == task.STATE_ERROR:
 	    print "Error reconfiguring vm: %s" % vm_name, task.get_error_message()
 
-def reconfigure_NIC(server, vm, network_name):
+def reconfigure_nic(server, vm, network_name):
 	vm_name = "BT5R2"
 	vm_obj=server.get_vm_by_name(vm_name) 
 	if vm_obj: 
@@ -113,7 +113,7 @@ def delete_vm(server, vm_name):
 	elif status == task.STATE_ERROR:
 	    print "Error removing vm:", task.get_error_message() 
 
-def getMAC(server, vm_name):
+def get_mac(server, vm_name):
 	"""Get MAC address of a VM
 
 	@server: server object 
@@ -183,7 +183,7 @@ def add_port_group(server, network_system, name, vlan_id, vswitch):
 
 	server._proxy.AddPortGroup(request) 
 
-def createSwitch(vswitch_name, port_group_name, num_ports, server, esxi_host): 
+def create_switch(vswitch_name, port_group_name, num_ports, server, esxi_host): 
 	prop = VIProperty(server, esxi_host)
 	network_system = prop.configManager.networkSystem._obj 
 	
