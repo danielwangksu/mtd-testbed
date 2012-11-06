@@ -1,6 +1,9 @@
 from pysphere import *
 from pysphere.resources import VimService_services as VI
 
+from db import *
+from util_db import *
+
 def create_nic(server, vm_name, network_name, run_async = False):
 	"""Adds a new NIC to an existing VM
 
@@ -208,3 +211,39 @@ def create_switch(vswitch_name, port_group_name, num_ports, server, esxi_host):
 	add_port_group(server, network_system, vswitch_name, vlan_id, vswitch_name) 
 
 	return True
+
+def create_VMs (server, no, vm_type, switch1, network = None, switch2 = None, switch3 = None, switch4 = None, template_name = "mtd-base-debian-wheezy", pool = "resgroup-142"):
+	for i in range(0,no):
+		template_vm = server.get_vm_by_name(template_name)
+		vm_name = "a-"+ vm_type + str(i)
+		vm = template_vm.clone(vm_name, resourcepool = pool)
+		if vm_type != "pFW" and vm_type != "intFW":
+			storeInfo_inDB(server, vm_name, vm_type, switch1, switch2, switch3, switch4)
+		get_mac_addresses(server, vm_name)
+	
+	if vm_type == "pFW" and no is 1:
+		configFW_NIC(server, "a-pFW0", network, switch1, switch2, switch3, switch4)
+
+	if vm_type == "intFW" and no is 1:
+		configFW_NIC(server, "a-intFW0", network, switch1, switch2, switch3, switch4)
+
+def configFW_NIC(server, name, network, switch1 = None, switch2 = None, switch3 = None, switch4 = None):
+	if name == "a-pFW0":
+		if switch1 and switch2:
+			create_nic(server, name, network)
+			create_nic(server, name, network)
+			storeInfo_inDB(server, name, "pFW", switch1, switch2, switch3, switch4)
+		elif switch1 or switch2:
+			create_nic(server, name, network)
+			storeInfo_inDB(server, name, "pFW", switch1, switch2, switch3, switch4)
+		else:
+			print "There is no network behind the perimeter firewall"
+	
+	if name == "a-intFW0":
+		if switch3:
+			create_nic(server, name, network)
+			create_nic(server, name, network)
+			storeInfo_inDB(server, name, "intFW", switch1, switch2, switch3, switch4)
+		else:
+			create_nic(server, name, network)
+			storeInfo_inDB(server, name, "intFW", switch1, switch2, switch3, switch4)
