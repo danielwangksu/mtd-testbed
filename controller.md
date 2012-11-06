@@ -20,7 +20,7 @@ Next, we'll install everything for Puppet, MCollective and ActiveMQ
 Let's clear out the included cert for the Puppetmaster
 
     puppet cert clean --all
-    puppet generate hurricane.mgmt.nw.com --dns_alt_names=puppet,puppet.mgmt.nw.com
+    puppet cert generate hurricane.mgmt.nw.com --dns_alt_names=puppet,puppet.mgmt.nw.com
     service puppetmaster restart
 
 Next, we'll setup the configuration for ActiveMQ
@@ -33,6 +33,19 @@ Next, we'll setup the configuration for ActiveMQ
     cd ../instances-enabled
     ln -s ../instances-available/mcollective mcollective
     service activemq restart
+
+Alternatively, here's how to setup RabbitMQ with STOMP support
+
+	apt-get install rabbitmq-server
+	rabbitmq-plugins enable rabbitmq_stomp rabbitmq_management
+	nano /etc/rabbitmq/rabbitmq.config
+	rabbitmqctl add_user mcollective marionette
+	rabbitmqctl add_user admin secret
+	rabbitmqctl delete_user guest
+	rabbitmqctl set_user_tags mcollective mcollective
+	rabbitmqctl set_user_tags admin mcollective administrator
+	rabbitmqctl set_permissions -p / mcollective ".*" ".*" ".*"
+	rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
 
 Finally, we'll update the configuration for MCollective
 
