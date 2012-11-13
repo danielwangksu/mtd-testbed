@@ -35,7 +35,7 @@ hostname = "hornet01"
 # Connect to the Mongo database
 connection = Mongo::Connection.new
 db = connection.db("vm_db_fixture")
-instances = connection.collection("instance")
+instances = db.collection("instance")
 
 # Create an RPC client for the node
 mco = MCollective::RPC.rpcclient("rpcutil")
