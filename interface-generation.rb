@@ -1,11 +1,12 @@
 require "erb"
 require "mcollective"
 require "mongo"
+require "pp"
 
 class Interface
 	attr_accessor :name, :address, :network, :gateway
 
-	def initialize(name, address, network, gateway):
+	def initialize(name, address, network, gateway)
 		@name = name
 		@address = address
 		@network = network
@@ -29,11 +30,11 @@ iface <%= iface.name %> inet static
 <% end %>
 }
 
-hostname = "a-pFW0"
+hostname = "hornet01"
 
 # Connect to the Mongo database
 connection = Mongo::Connection.new
-db = connection.db("vm_db")
+db = connection.db("vm_db_fixture")
 instances = connection.collection("instance")
 
 # Create an RPC client for the node
