@@ -25,6 +25,10 @@ print server.get_server_type()
 esxi_host = server.get_hosts().keys()[0] 
 
 ################################################# BluePrint 1 ##############################################
+
+lab_switch = Switch(name = "N127 Physical Network", network = "192.168.1.0", netmask = "255.255.255.0")
+lab_switch.save()
+
 # create vSwitches 
 switch1Exists = False
 if webNo or mailNo :
