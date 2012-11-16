@@ -85,11 +85,11 @@ for vm in vmlist:
 		if vm_type == "intFW":
 			storeFW_inDB(server, "a-intFW0", vm_type, switch1, switch2, switch3, switch4)
 
-####### Simulating that VMs are configured #######
+####### Simulating that VMs are configured ########
 for instance in Instance.objects:
 	instance.status = "configured"
 	instance.save()
-##################################################
+###################################################
 
 while(True):
 	print "\nVM(s) Status:"
@@ -107,7 +107,7 @@ while(True):
 				else:
 					count = count + 1
 
-	print "\nVM(s) State:"
+	print "\nVM(s) Power State:"
 	powerON(server,"pFW")
 	powerON(server,"intFW")
 	powerON(server,"web")
