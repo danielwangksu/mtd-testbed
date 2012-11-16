@@ -115,7 +115,6 @@ while(True):
 			count = 1
 			for interface in instance.interfaces:
 				if interface.switch:
-					#print instance.hostname + " - " + interface.name + " - " + interface.mac_address + " - " + interface.switch.name
 					deploy_VM(server, instance.hostname, instance.tag, interface.name, interface.mac_address, interface.switch.name)
 
 				if count is len(instance.interfaces):
