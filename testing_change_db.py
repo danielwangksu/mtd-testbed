@@ -25,6 +25,7 @@ for instance in Instance.objects:
 for instance in Instance.objects:
 	print instance.hostname + " - " + instance.status
 
+'''
 powerON(server,"pFW")
 powerON(server,"intFW")
 powerON(server,"web")
@@ -33,5 +34,5 @@ powerON(server,"log")
 powerON(server,"file")
 powerON(server,"vpn")
 powerON(server,"client")
-
+'''
 
