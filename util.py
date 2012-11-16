@@ -217,32 +217,29 @@ def create_VMs (server, no, counter, vm_type, switch1, network = None, switch2 =
 		template_vm = server.get_vm_by_name(template_name)
 		vm_name = "a-"+ vm_type + str(i)
 		vm = template_vm.clone(vm_name, resourcepool = pool)
+		print vm_name + " was successfully created"
 
 		if vm_type == "web" or vm_type == "mail" :
 			ip = "172.17.1." + str(counter)
 			storeInfo_inDB(server, vm_name, vm_type, switch1, switch2, switch3, switch4, ip, gateway = "172.17.1.1")
 			counter = counter + 1
-			print vm_name + " was successfully created"
 
 		if vm_type == "client" or vm_type == "vpn" :
 			ip = "172.17.3." + str(counter)
 			storeInfo_inDB(server, vm_name, vm_type, switch1, switch2, switch3, switch4, ip, gateway = "172.17.3.1")
 			counter = counter + 1
-			print vm_name + " was successfully created"
 
 		if vm_type == "log" or vm_type == "file" :
 			ip = "172.17.4." + str(counter)
 			storeInfo_inDB(server, vm_name, vm_type, switch1, switch2, switch3, switch4, ip, gateway = "172.17.4.1")
 			counter = counter + 1
-			print vm_name + " was successfully created"
-	
+		
 	if vm_name == "a-pFW0":
 		configFW_NIC(server, "a-pFW0", network, switch1, switch2, switch3, switch4, lab_switch)
-		print vm_name + " was successfully created"
 
 	if vm_name == "a-intFW0":
 		configFW_NIC(server, "a-intFW0", network, switch1, switch2, switch3, switch4)
-		print vm_name + " was successfully created"
+
 
 def configFW_NIC(server, name, network, switch1 = None, switch2 = None, switch3 = None, switch4 = None, lab_switch = None):
 	if name == "a-pFW0":
