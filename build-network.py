@@ -110,7 +110,7 @@ if fileNo > 0:
 while(True):
 	print "\nVM Status:"
 	for instance in Instance.objects:
-		print instance.hostname + " Status: \'" + instance.status + "\' #_of_NICs: " + str(len(instance.interfaces))
+		print "VM name: " + instance.hostname + " Status: \'" + instance.status + "\' #_of_NICs: " + str(len(instance.interfaces))
 		if instance.status == "configured":
 			count = 1
 			for interface in instance.interfaces:
@@ -123,6 +123,18 @@ while(True):
 					instance.save()
 				else:
 					count = count + 1
-	
+	# Turning ON VMs	
+	print "\nVM(s) State:"
+	powerON(server,"pFW")
+	powerON(server,"intFW")
+	powerON(server,"web")
+	powerON(server,"mail")
+	powerON(server,"log")
+	powerON(server,"file")
+	powerON(server,"vpn")
+	powerON(server,"client")
 	time.sleep(30)
+
+
+
 

@@ -294,4 +294,13 @@ def deploy_VM(server, vm_name, tag, interface_name, interface_mac, network_name)
 		vm.power_off()
 
 	reconfigure_nic(server, vm_name, interface_mac, network_name)
-	#vm.power_on()
+
+def powerON(server, vm_tag):
+	for instance in Instance.objects:
+		if instance.tag == vm_tag:	
+			vm = server.get_vm_by_name(instance.hostname)
+			if vm.get_status() != "POWERED ON" and vm.get_status() != "POWERING ON":
+				print "Turning ON " + instance.hostname
+				vm.power_on()
+			else:
+				print instance.hostname + " is already POWERED ON"
