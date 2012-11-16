@@ -42,10 +42,10 @@ def create_nic(server, vm_name, network_name, run_async = False):
 		task = VITask(ret, server)
 		status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR])
 		if status == task.STATE_SUCCESS:
-			print "VM %s successfully reconfigured" % vm_name
+			print "VM %s - NIC successfully created" % vm_name
 		
 		elif status == task.STATE_ERROR:
-			print "Error reconfiguring vm: %s" % vm_name, task.get_error_message()
+			print "Error creating NIC vm: %s" % vm_name, task.get_error_message()
 
 def reconfigure_nic(server, vm_name, mac_address, network_name, run_async = False):
 	"""Reconfigures a NIC by its MAC address
@@ -72,7 +72,7 @@ def reconfigure_nic(server, vm_name, mac_address, network_name, run_async = Fals
 	        break 
 	
 	if not net_device: 
-	    raise Exception("The vm seems to lack a Virtual Nic") 
+	    raise Exception("The VM seems to lack a Virtual Nic") 
 	        
 	# Set NIC MAC address to Manual and set address 
 	# net_device.set_element_addressType("Manual") 
@@ -95,7 +95,7 @@ def reconfigure_nic(server, vm_name, mac_address, network_name, run_async = Fals
 		task = VITask(ret, server) 
 		status = task.wait_for_state([task.STATE_SUCCESS, task.STATE_ERROR]) 
 		if status == task.STATE_SUCCESS: 
-			print "VM %s successfully reconfigured" % vm_name 
+			print "VM: %s -> NIC: %s - successfully reconfigured" % (vm_name, mac_address) 
 		elif status == task.STATE_ERROR: 
 			print "Error reconfiguring vm_name: %s" % vm_name, task.get_error_message() 
 
@@ -211,7 +211,8 @@ def create_switch(vswitch_name, port_group_name, num_ports, server, esxi_host):
 
 	return True
 
-def create_VMs (server, no, counter, vm_type, switch1, network = None, switch2 = None, switch3 = None, switch4 = None, template_name = "mtd-base-debian-wheezy", pool = "resgroup-142"):
+def create_VMs (server, no, counter, vm_type, switch1, network = None, switch2 = None, switch3 = None, switch4 = None, lab_switch = None, template_name = "mtd-base-debian-wheezy", pool = "resgroup-142"):
+	vm_name = ""	
 	for i in range(0,no):
 		template_vm = server.get_vm_by_name(template_name)
 		vm_name = "a-"+ vm_type + str(i)
@@ -221,34 +222,37 @@ def create_VMs (server, no, counter, vm_type, switch1, network = None, switch2 =
 			ip = "172.17.1." + str(counter)
 			storeInfo_inDB(server, vm_name, vm_type, switch1, switch2, switch3, switch4, ip, gateway = "172.17.1.1")
 			counter = counter + 1
+			print vm_name + " was successfully created"
 
 		if vm_type == "client" or vm_type == "vpn" :
 			ip = "172.17.3." + str(counter)
 			storeInfo_inDB(server, vm_name, vm_type, switch1, switch2, switch3, switch4, ip, gateway = "172.17.3.1")
 			counter = counter + 1
+			print vm_name + " was successfully created"
 
 		if vm_type == "log" or vm_type == "file" :
 			ip = "172.17.4." + str(counter)
 			storeInfo_inDB(server, vm_name, vm_type, switch1, switch2, switch3, switch4, ip, gateway = "172.17.4.1")
 			counter = counter + 1
-
-		get_mac_addresses(server, vm_name)
+			print vm_name + " was successfully created"
 	
-	if vm_type == "pFW" and no is 1:
-		configFW_NIC(server, "a-pFW0", network, switch1, switch2, switch3, switch4)
+	if vm_name == "a-pFW0":
+		configFW_NIC(server, "a-pFW0", network, switch1, switch2, switch3, switch4, lab_switch)
+		print vm_name + " was successfully created"
 
-	if vm_type == "intFW" and no is 1:
+	if vm_name == "a-intFW0":
 		configFW_NIC(server, "a-intFW0", network, switch1, switch2, switch3, switch4)
+		print vm_name + " was successfully created"
 
-def configFW_NIC(server, name, network, switch1 = None, switch2 = None, switch3 = None, switch4 = None):
+def configFW_NIC(server, name, network, switch1 = None, switch2 = None, switch3 = None, switch4 = None, lab_switch = None):
 	if name == "a-pFW0":
 		if switch1 and switch2:
 			create_nic(server, name, network)
 			create_nic(server, name, network)
-			storeFW_inDB(server, name, "pFW", switch1, switch2, switch3, switch4)
+			storeFW_inDB(server, name, "pFW", switch1, switch2, switch3, switch4, lab_switch)
 		elif switch1 or switch2:
 			create_nic(server, name, network)
-			storeFW_inDB(server, name, "pFW", switch1, switch2, switch3, switch4)
+			storeFW_inDB(server, name, "pFW", switch1, switch2, switch3, switch4, lab_switch)
 		else:
 			print "There is no network behind the perimeter firewall"
 	
@@ -282,3 +286,15 @@ def genIP(server, vm_name, counter, vm_type, switch1, network = None, switch2 = 
 
 	if vm_type == "intFW":
 		configFW_NIC(server, "a-intFW0", network, switch1, switch2, switch3, switch4)
+
+def deploy_VM(server, vm_name, tag, interface_name, interface_mac, network_name):
+	vm = server.get_vm_by_name(vm_name) 
+
+	if vm.is_powering_off():
+		time.sleep(5)
+
+	if vm.get_status() != "POWERED OFF":
+		vm.power_off()
+
+	reconfigure_nic(server, vm_name, interface_mac, network_name)
+	#vm.power_on()
