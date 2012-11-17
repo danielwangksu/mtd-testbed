@@ -295,7 +295,7 @@ def deploy_VM(server, vm_name, tag, interface_name, interface_mac, network_name)
 
 	reconfigure_nic(server, vm_name, interface_mac, network_name)
 
-def powerON(server, vm_tag):
+def power_on(server, vm_tag):
 	for instance in Instance.objects:
 		if instance.tag == vm_tag:	
 			vm = server.get_vm_by_name(instance.hostname)

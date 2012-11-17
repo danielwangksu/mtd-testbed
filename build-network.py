@@ -124,14 +124,14 @@ while(True):
 					count = count + 1
 	# Turning ON VMs	
 	print "\nVM(s) State:"
-	powerON(server,"pFW")
-	powerON(server,"intFW")
-	powerON(server,"web")
-	powerON(server,"mail")
-	powerON(server,"log")
-	powerON(server,"file")
-	powerON(server,"vpn")
-	powerON(server,"client")
+	power_on(server,"pFW")
+	power_on(server,"intFW")
+	power_on(server,"web")
+	power_on(server,"mail")
+	power_on(server,"log")
+	power_on(server,"file")
+	power_on(server,"vpn")
+	power_on(server,"client")
 	time.sleep(30)
 
 
