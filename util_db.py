@@ -14,7 +14,7 @@ def storeInfo_inDB(server, vm_name, tag, switch1, switch2 = None, switch3 = None
 	@vm_name: vm name string
 	"""
 	instance = Instance(hostname = vm_name, tag = tag, status = "provisioned")
-	instance.save()
+	instance.save(cascade = True)
 	vm = server.get_vm_by_name(vm_name)
 
 	for id, device in vm.get_property("devices").items():
@@ -29,11 +29,11 @@ def storeInfo_inDB(server, vm_name, tag, switch1, switch2 = None, switch3 = None
 				switch = switch4
 
 			interface = Interface(name = str(device["label"]), instance = instance, mac_address = str(device["macAddress"]), ip_address = ip, network = str(switch.network), netmask = str(switch.netmask), gateway = gateway, switch = switch)
-			interface.save()
+			interface.save(cascade = True)
 			instance.interfaces.append(interface)
-			instance.save()
+			instance.save(cascade = True)
 
-def storeFW_inDB(server, vm_name, tag, switch1, switch2 = None, switch3 = None, switch4 = None):
+def storeFW_inDB(server, vm_name, tag, switch1, switch2 = None, switch3 = None, switch4 = None, lab_switch = None):
 	"""Stores FW MAC(s) and interface(s) names in the DB
 
 	@server: server object 
@@ -42,25 +42,25 @@ def storeFW_inDB(server, vm_name, tag, switch1, switch2 = None, switch3 = None, 
 	@vm_name: vm name string
 	"""
 	instance = Instance(hostname = vm_name, tag = tag, status = "provisioned")
-	instance.save()
+	instance.save(cascade = True)
 	vm = server.get_vm_by_name(vm_name)
 
 	if tag == "pFW":
 		for id, device in vm.get_property("devices").items():
 			if device.has_key("macAddress"):
 				if str(device["label"]) == "Network adapter 1":
-					interface = Interface(name = str(device["label"]), instance = instance, mac_address = str(device["macAddress"]))
-					interface.save()
+					interface = Interface(name = str(device["label"]), instance = instance, mac_address = str(device["macAddress"]), switch = lab_switch)
+					interface.save(cascade = True)
 					instance.interfaces.append(interface)
 
 				if str(device["label"]) == "Network adapter 2":
 					interface = Interface(name = str(device["label"]), instance = instance, mac_address = str(device["macAddress"]),ip_address = "172.17.2.1", network = "172.17.2.0", netmask = "255.255.255.0", switch = switch2)
-					interface.save()
+					interface.save(cascade = True)
 					instance.interfaces.append(interface)
 
 				if str(device["label"]) == "Network adapter 3":
 					interface = Interface(name = str(device["label"]), instance = instance, mac_address = str(device["macAddress"]),ip_address = "172.17.1.1", network = "172.17.1.0", netmask = "255.255.255.0", switch = switch1)
-					interface.save()
+					interface.save(cascade = True)
 					instance.interfaces.append(interface)
 
 	if tag == "intFW":
@@ -68,18 +68,18 @@ def storeFW_inDB(server, vm_name, tag, switch1, switch2 = None, switch3 = None, 
 			if device.has_key("macAddress"):
 				if str(device["label"]) == "Network adapter 1":
 					interface = Interface(name = str(device["label"]), instance = instance, mac_address = str(device["macAddress"]),ip_address = "172.17.2.2", network = "172.17.2.0", netmask = "255.255.255.0", gateway = "172.17.2.1", switch = switch2)
-					interface.save()
+					interface.save(cascade = True)
 					instance.interfaces.append(interface)
 
 				if str(device["label"]) == "Network adapter 2":
 					interface = Interface(name = str(device["label"]), instance = instance, mac_address = str(device["macAddress"]),ip_address = "172.17.4.1", network = "172.17.4.0", netmask = "255.255.255.0", switch = switch4)
-					interface.save()
+					interface.save(cascade = True)
 					instance.interfaces.append(interface)
 
 				if str(device["label"]) == "Network adapter 3":
 					interface = Interface(name = str(device["label"]), instance = instance, mac_address = str(device["macAddress"]),ip_address = "172.17.3.1", network = "172.17.3.0", netmask = "255.255.255.0", switch = switch3)
-					interface.save()
+					interface.save(cascade = True)
 					instance.interfaces.append(interface)					
 		
 
-	instance.save()
+	instance.save(cascade = True)
