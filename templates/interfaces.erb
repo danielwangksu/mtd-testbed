@@ -1,0 +1,16 @@
+auto lo
+iface lo inet loopback
+
+<% for iface in ifaces %>
+auto <%= iface.name %>
+<% if iface.dhcp %>
+iface <%= iface.name %> inet dhcp
+<% else %>
+iface <%= iface.name %> inet static
+	address <%= iface.address %>
+	netmask <%= iface.netmask %>
+	<% if iface.gateway %>
+	gateway <%= iface.gateway %>
+	<% end %>
+<% end %>
+<% end %>

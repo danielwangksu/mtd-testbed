@@ -1,0 +1,11 @@
+node "<%= instance.hostname %>" {
+	include debian
+	include <%= instance.tag %>
+	
+	file { "/etc/network/interfaces":
+		source => "puppet:///files/<%= instance.hostname %>/etc/network/interfaces",
+		mode => 0644,
+		owner => root,
+		group => root
+	}
+}
