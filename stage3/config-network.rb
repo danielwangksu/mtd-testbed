@@ -26,7 +26,8 @@ def generate_network_config(opts = {})
   mco = rpcclient("rpcutil")
 
   ## Define the host we're configuring
-  mco.fact_filter "hostname", hostname
+  mac_pattern = build_mac_pattern interfaces
+  mco.fact_filter "mac_address", mac_pattern, "=~"
 
   ## Query the node for an inventory
   result = mco.inventory.first

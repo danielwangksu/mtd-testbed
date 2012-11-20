@@ -8,11 +8,9 @@ require "stage3/kickstart"
 
 include Mongo
 
-o = {
-  :noop => true
-}
-
 def scan_instances(db)
+  noop = true
+  
   collection = db.collection("instance")
   instances = collection.find(:status => "provisioned")
   
@@ -22,17 +20,17 @@ def scan_instances(db)
     log "Found unconfigured host #{hostname}"
     log "Generating configuration"
     
-    generate_network_config :hostname => hostname, :db => db, :noop => o[:noop]
-    generate_puppet_manifest :instance => instance, :noop => o[:noop]
+    generate_network_config :hostname => hostname, :db => db, :noop => noop
+    generate_puppet_manifest :instance => instance, :noop => noop
     
     log "Attempting stage 3 of kickstart"
     
-    kickstart :hostname => hostname, :db => db, :noop => o[:noop]
+    kickstart :hostname => hostname, :db => db, :noop => noop
     
     log "Finished configuring host #{hostname}"
     
     instance["status"] = "configured"
-    if not o[:noop]
+    if not noop
       collection.update({ "_id" => instance["id"] }, instance)
       log "Saved state to the database"
     end
