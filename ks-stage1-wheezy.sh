@@ -6,7 +6,11 @@
 set -e
 
 PATH=/bin:/sbin:/usr/sbin:/usr/bin
-KSPATH=/tmp/ks
+KSPATH=/var/tmp/kickstart
+
+if [ -d "$KSPATH" ]; then
+    exit 0
+fi
 
 ## Install git
 apt-get update
