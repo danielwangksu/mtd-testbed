@@ -1,5 +1,4 @@
 require "erb"
-require "pp"
 require "stage3/util"
 
 class Instance
@@ -21,10 +20,12 @@ def generate_puppet_manifest(opts = {})
 
   out = ERB.new(File.read('templates/manifest.erb')).result(binding)
 
-  if not o[:noop]
+  if o[:noop]
+    puts out
+  else
     directory = "/etc/puppet/manifests/nodes/"
     FileUtils.mkpath directory
-    File.open(directory + hostname + ".pp", "w+") do |f|
+    File.open(directory + instance.hostname + ".pp", "w+") do |f|
       f.write(out)
     end
   end

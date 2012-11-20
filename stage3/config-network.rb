@@ -1,6 +1,5 @@
 require "erb"
 require "mcollective"
-require "pp"
 require "stage3/util"
 
 include MCollective::RPC
@@ -13,24 +12,29 @@ end
 def generate_network_config(opts = {})
   o = {
     :db => nil,
-    :hostname => nil,
+    :instance => nil,
     :noop => false
   }.merge(opts)
   
   db = o[:db]
-  hostname = o[:hostname]
+  instance = o[:instance]
+  hostname = instance["hostname"]
   
-  interfaces = db.collection("interface")
+  collection = db.collection("interface")
 
   ## Create an RPC client for the node
   mco = rpcclient("rpcutil")
 
   ## Define the host we're configuring
-  mac_pattern = build_mac_pattern interfaces
-  mco.fact_filter "mac_address", mac_pattern, "=~"
+  mac_pattern = build_mac_pattern(collection.find(:instance => instance["_id"]))
+  mco.fact_filter "macaddress", mac_pattern, "=~"
 
   ## Query the node for an inventory
   result = mco.inventory.first
+  if result.nil?
+    return false
+  end
+
   facts = result[:data][:facts]
 
   ## Array of template model instances, NOT TO BE CONFUSED with database model instances
@@ -42,7 +46,7 @@ def generate_network_config(opts = {})
       iface.name = $1
 
       # ugly ugly ugly
-      interface = interfaces.find_one(:mac_address => value)
+      interface = collection.find_one(:mac_address => value)
       if interface.nil? or interface["ip_address"].nil?
 	iface.dhcp = true
       
@@ -59,13 +63,17 @@ def generate_network_config(opts = {})
     end
   end
   
-  out = ERB.new(File.read('templates/interfaces.rb')).result(binding)
+  out = ERB.new(File.read('templates/interfaces.erb')).result(binding)
 
-  if not o[:noop]
+  if o[:noop]
+    puts out
+  else
     directory = "/etc/puppet/files/#{hostname}/etc/network/"
     FileUtils.mkpath directory
     File.open(directory + "interfaces", "w+") do |f|
       f.write(out)
     end
   end
+
+  return true
 end

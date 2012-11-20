@@ -16,14 +16,12 @@ def kickstart(opts = {})
   hostname = instance["hostname"]
   
   collection = db.collection("interface")
-  interfaces = collection.find_one(:instance => instance["id"])
+  interfaces = collection.find(:instance => instance["_id"])
   mac_pattern = build_mac_pattern(interfaces)
-  
-  log "Using #{mac_pattern} to filter instance"
   
   rpc_options = {
     :progress => false, 
-    :verbose => true
+    :verbose => false
   }
 
   client_ca = rpcclient("puppetca", rpc_options)

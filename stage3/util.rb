@@ -10,5 +10,9 @@ def build_mac_pattern(interfaces)
     mac_addresses.push(i["mac_address"])
   end
   
-  return "/^(" + mac_addresses.join('|') + ")$/"
+  pattern = "/^(" + mac_addresses.join('|') + ")$/"
+
+  log "Using #{pattern} for fact filter"
+
+  return pattern
 end

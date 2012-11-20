@@ -1,3 +1,5 @@
+require "rubygems"
+require "colorize"
 require "mcollective"
 require "mongo"
 
@@ -9,7 +11,7 @@ require "stage3/kickstart"
 include Mongo
 
 def scan_instances(db)
-  noop = true
+  noop = false
   
   collection = db.collection("instance")
   instances = collection.find(:status => "provisioned")
@@ -17,21 +19,25 @@ def scan_instances(db)
   instances.each do |instance|
     hostname = instance["hostname"]
     
-    log "Found unconfigured host #{hostname}"
+    log "Found unconfigured host #{hostname}".on_blue
     log "Generating configuration"
     
-    generate_network_config :hostname => hostname, :db => db, :noop => noop
+    if not generate_network_config :instance => instance, :db => db, :noop => noop
+      log "Could not connect to instance via MCollective; will retry next round".on_red
+      next
+    end
+
     generate_puppet_manifest :instance => instance, :noop => noop
     
     log "Attempting stage 3 of kickstart"
     
-    kickstart :hostname => hostname, :db => db, :noop => noop
+    kickstart :instance => instance, :db => db, :noop => noop
     
-    log "Finished configuring host #{hostname}"
+    log "Finished configuring host #{hostname}".black.on_green
     
     instance["status"] = "configured"
     if not noop
-      collection.update({ "_id" => instance["id"] }, instance)
+      collection.update({ "_id" => instance["_id"] }, instance)
       log "Saved state to the database"
     end
   end
@@ -46,5 +52,5 @@ log "Starting event loop -- press CTRL + C to stop"
 while true
   log "Waiting for instances to be provisioned..."
   scan_instances(db)
-  sleep 5
+  sleep 30
 end
