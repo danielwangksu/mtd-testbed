@@ -7,10 +7,13 @@ set -e
 
 PATH=/bin:/sbin:/usr/sbin:/usr/bin
 KSPATH=/var/tmp/kickstart
+LOCKFILE=/var/lock/kickstart
 
-if [ -d "$KSPATH" ]; then
+if [ -f "$LOCKFILE" ]; then
     exit 0
 fi
+
+touch $LOCKFILE
 
 ## Install git
 apt-get update
