@@ -45,9 +45,11 @@ end
 
 ## Connect to database
 connection = Connection.new
-db = connection.db("fixture")
+db_name = "vm_db"
+db = connection.db(db_name)
 
 ## Event loop
+log "Connected to database #{db_name}".black.on_green
 log "Starting event loop -- press CTRL + C to stop"
 while true
   log "Waiting for instances to be provisioned..."

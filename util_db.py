@@ -45,7 +45,7 @@ def storeFW_inDB(server, vm_name, tag, switch1, switch2 = None, switch3 = None, 
 	instance.save(cascade = True)
 	vm = server.get_vm_by_name(vm_name)
 
-	if tag == "pFW":
+	if tag == "pfw":
 		for id, device in vm.get_property("devices").items():
 			if device.has_key("macAddress"):
 				if str(device["label"]) == "Network adapter 1":
@@ -63,7 +63,7 @@ def storeFW_inDB(server, vm_name, tag, switch1, switch2 = None, switch3 = None, 
 					interface.save(cascade = True)
 					instance.interfaces.append(interface)
 
-	if tag == "intFW":
+	if tag == "intfw":
 		for id, device in vm.get_property("devices").items():
 			if device.has_key("macAddress"):
 				if str(device["label"]) == "Network adapter 1":

@@ -68,11 +68,11 @@ network1 = 2
 network3 = 2
 network4 = 2
 print "\nCreating VMs ..."
-# create pFW
-create_VMs (server, 1, 0, "pFW", switch1, "mtd-mgmt", switch2, switch3, switch4, lab_switch)
+# create pfw
+create_VMs (server, 1, 0, "pfw", switch1, "mtd-mgmt", switch2, switch3, switch4, lab_switch)
 
-# create intFW
-create_VMs (server, 1, 0, "intFW", switch1, "mtd-mgmt", switch2, switch3, switch4, lab_switch)
+# create intfw
+create_VMs (server, 1, 0, "intfw", switch1, "mtd-mgmt", switch2, switch3, switch4, lab_switch)
 
 # create web server(s)
 if webNo > 0:
@@ -124,8 +124,8 @@ while(True):
 					count = count + 1
 	# Turning ON VMs	
 	print "\nVM(s) State:"
-	power_on(server,"pFW")
-	power_on(server,"intFW")
+	power_on(server,"pfw")
+	power_on(server,"intfw")
 	power_on(server,"web")
 	power_on(server,"mail")
 	power_on(server,"log")

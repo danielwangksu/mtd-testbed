@@ -28,5 +28,7 @@ def generate_puppet_manifest(opts = {})
     File.open(directory + instance.hostname + ".pp", "w+") do |f|
       f.write(out)
     end
+
+    FileUtils.touch "/etc/puppet/manifests/site.pp"
   end
 end

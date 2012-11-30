@@ -211,11 +211,11 @@ def create_switch(vswitch_name, port_group_name, num_ports, server, esxi_host):
 
 	return True
 
-def create_VMs (server, no, counter, vm_type, switch1, network = None, switch2 = None, switch3 = None, switch4 = None, lab_switch = None, template_name = "mtd-base-debian-wheezy", pool = "resgroup-142"):
+def create_VMs (server, no, counter, vm_type, switch1, network = None, switch2 = None, switch3 = None, switch4 = None, lab_switch = None, template_name = "mtd-target-debian-wheezy", pool = "resgroup-142"):
 	vm_name = ""	
 	for i in range(0,no):
 		template_vm = server.get_vm_by_name(template_name)
-		vm_name = "a-"+ vm_type + str(i)
+		vm_name = "a-"+ vm_type + str(i) + ".mgmt.nw.com"
 		vm = template_vm.clone(vm_name, resourcepool = pool)
 		print vm_name + " was successfully created"
 
@@ -234,33 +234,33 @@ def create_VMs (server, no, counter, vm_type, switch1, network = None, switch2 =
 			storeInfo_inDB(server, vm_name, vm_type, switch1, switch2, switch3, switch4, ip, gateway = "172.17.4.1")
 			counter = counter + 1
 		
-	if vm_name == "a-pFW0":
-		configFW_NIC(server, "a-pFW0", network, switch1, switch2, switch3, switch4, lab_switch)
+	if vm_type == "pfw":
+		configFW_NIC(server, vm_name, network, switch1, switch2, switch3, switch4, lab_switch)
 
-	if vm_name == "a-intFW0":
-		configFW_NIC(server, "a-intFW0", network, switch1, switch2, switch3, switch4)
+	if vm_type == "intfw":
+		configFW_NIC(server, vm_name, network, switch1, switch2, switch3, switch4)
 
 
 def configFW_NIC(server, name, network, switch1 = None, switch2 = None, switch3 = None, switch4 = None, lab_switch = None):
-	if name == "a-pFW0":
+	if name == "a-pfw0.mgmt.nw.com":
 		if switch1 and switch2:
 			create_nic(server, name, network)
 			create_nic(server, name, network)
-			storeFW_inDB(server, name, "pFW", switch1, switch2, switch3, switch4, lab_switch)
+			storeFW_inDB(server, name, "pfw", switch1, switch2, switch3, switch4, lab_switch)
 		elif switch1 or switch2:
 			create_nic(server, name, network)
-			storeFW_inDB(server, name, "pFW", switch1, switch2, switch3, switch4, lab_switch)
+			storeFW_inDB(server, name, "pfw", switch1, switch2, switch3, switch4, lab_switch)
 		else:
 			print "There is no network behind the perimeter firewall"
 	
-	if name == "a-intFW0":
+	if name == "a-intfw0.mgmt.nw.com":
 		if switch3:
 			create_nic(server, name, network)
 			create_nic(server, name, network)
-			storeFW_inDB(server, name, "intFW", switch1, switch2, switch3, switch4)
+			storeFW_inDB(server, name, "intfw", switch1, switch2, switch3, switch4)
 		else:
 			create_nic(server, name, network)
-			storeFW_inDB(server, name, "intFW", switch1, switch2, switch3, switch4)
+			storeFW_inDB(server, name, "intfw", switch1, switch2, switch3, switch4)
 
 def genIP(server, vm_name, counter, vm_type, switch1, network = None, switch2 = None, switch3 = None, switch4 = None):
 
@@ -278,11 +278,11 @@ def genIP(server, vm_name, counter, vm_type, switch1, network = None, switch2 = 
 
 		get_mac_addresses(server, vm_name)
 	
-	if vm_type == "pFW":
-		configFW_NIC(server, "a-pFW0", network, switch1, switch2, switch3, switch4)
+	if vm_type == "pfw":
+		configFW_NIC(server, "a-pfw0", network, switch1, switch2, switch3, switch4)
 
-	if vm_type == "intFW":
-		configFW_NIC(server, "a-intFW0", network, switch1, switch2, switch3, switch4)
+	if vm_type == "intfw":
+		configFW_NIC(server, "a-intfw0", network, switch1, switch2, switch3, switch4)
 
 def deploy_VM(server, vm_name, tag, interface_name, interface_mac, network_name):
 	vm = server.get_vm_by_name(vm_name) 
