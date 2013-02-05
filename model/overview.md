@@ -26,9 +26,8 @@ Services and dependencies are applied to resources using different adaptation an
 clustering strategies.
 
 *TODO* How do we define clusters of services? 1 master + n slaves, many master, etc.
-I am not sure what you exactly mean. However, I would define it in the following way:
-A cluster of services is a module of services. The services are grouped together for different purposes: 
-availability, reliability, security, etc.
+The term cluster is used in terms of failover/fault tolerance and load balancing. As in,
+multiple instances that provide the same service.
 
 ### Logical Model
 
@@ -46,8 +45,8 @@ are either physical or virtual.
 
 A switch is either a physical or virtual switch. Ideally, a physical switch would support
 VLAN management via OpenFlow. 
-*TODO* Is there a more generic term we could use instead
-of switch? Perhaps Network
+*TODO* Is there a more generic term we could use instead of switch? (perhaps a network, 
+subnet, boundary, zone)
 
 An instance can have one or more roles; a role is simply a service that the instance
 provides.
